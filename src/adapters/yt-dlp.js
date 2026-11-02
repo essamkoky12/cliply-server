@@ -461,6 +461,47 @@ function parseMetadata(stdout) {
   }
 }
 
+function logMetadataDiagnostic(error, platform) {
+  const diagnostic = error?.diagnostic;
+  if (!diagnostic || typeof diagnostic !== 'object') return;
+
+  const allowedProxyEvents = new Set([
+    'proxy_authentication_rejected',
+    'proxy_destination_rejected',
+    'proxy_destination_unresolved',
+    'proxy_protocol_rejected',
+    'proxy_request_invalid',
+    'proxy_upstream_failed',
+    'proxy_upstream_timeout',
+    'upstream_http_403',
+    'https_tunnel_established'
+  ]);
+  const proxyEvents = Array.isArray(diagnostic.proxyEvents)
+    ? diagnostic.proxyEvents.slice(-8).flatMap((event) => {
+        if (!event || !allowedProxyEvents.has(event.type)) return [];
+        const destination = typeof event.destination === 'string'
+          && /^[a-z\d._:-]{1,253}$/i.test(event.destination)
+          ? event.destination
+          : null;
+        return [{ type: event.type, destination }];
+      })
+    : [];
+  const safeLabel = (value, fallback) => (
+    typeof value === 'string' && /^[a-z\d _-]{1,64}$/i.test(value) ? value : fallback
+  );
+
+  console.error('Metadata request diagnostic:', JSON.stringify({
+    platform,
+    stage: safeLabel(diagnostic.stage, 'unknown'),
+    failureSource: safeLabel(diagnostic.failureSource, 'unknown'),
+    httpStatus: Number.isInteger(diagnostic.httpStatus) ? diagnostic.httpStatus : null,
+    exitCode: Number.isInteger(diagnostic.exitCode) ? diagnostic.exitCode : null,
+    errorCode: safeLabel(error.code, 'UNKNOWN'),
+    stderrExcerpt: sanitizeDiagnosticExcerpt(diagnostic.stderrExcerpt),
+    proxyEvents
+  }));
+}
+
 async function getInfo(raw, options = {}) {
   const platform = supportedPlatform(raw, options.platformOverride);
   if (!platform) throw new AppError('UNSUPPORTED_PROVIDER', 'Only recognized video-provider URLs can use yt-dlp.', 415);
@@ -471,8 +512,11 @@ async function getInfo(raw, options = {}) {
   try {
     ({ stdout } = await runMetadata(raw, options));
   } catch (error) {
+    logMetadataDiagnostic(error, platform.name);
     if (error instanceof AppError && error.code === 'ACQUISITION_FAILED') {
-      throw new AppError('METADATA_UNAVAILABLE', 'yt-dlp could not retrieve metadata for this source.', error.status);
+      const metadataError = new AppError('METADATA_UNAVAILABLE', 'yt-dlp could not retrieve metadata for this source.', error.status);
+      metadataError.diagnostic = error.diagnostic;
+      throw metadataError;
     }
     throw error;
   }
