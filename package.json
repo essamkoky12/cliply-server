@@ -1,8 +1,8 @@
 {
-  "name": "clipdown-server",
+  "name": "cliply-server",
   "version": "1.0.0",
   "private": true,
-  "description": "ClipDown media processing API",
+  "description": "Cliply media processing API",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

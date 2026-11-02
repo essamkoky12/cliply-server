@@ -135,13 +135,13 @@ async function start() {
     console.warn('One or more media integrations are unavailable; inspect GET /api/providers for details.');
   }
   return app.listen(config.port, () => {
-    console.log(`ClipDown API listening on port ${config.port}`);
+    console.log(`Cliply API listening on port ${config.port}`);
   });
 }
 
 if (require.main === module) {
   start().catch((error) => {
-    console.error('ClipDown API failed to start:', error);
+    console.error('Cliply API failed to start:', error);
     process.exitCode = 1;
   });
 }

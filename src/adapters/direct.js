@@ -26,7 +26,7 @@ function requestOnce(url, method, addresses, timeoutMs, options = {}) {
       method,
       timeout: timeoutMs,
       headers: {
-        'User-Agent': 'ClipDown/1.0',
+        'User-Agent': 'Cliply/1.0',
         ...(method === 'GET' ? { 'Accept-Encoding': 'identity' } : {}),
         ...(options.headers || {})
       },

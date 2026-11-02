@@ -49,7 +49,7 @@ function createEgressProxy({ resolver = resolvePublicAddresses, allowedPorts = [
   const server = http.createServer((request, response) => {
     if (!matchesCredentials(request.headers['proxy-authorization'], token)) {
       recordDiagnostic('proxy_authentication_rejected');
-      response.writeHead(407, { 'Proxy-Authenticate': 'Basic realm="ClipDown"', Connection: 'close' }).end();
+      response.writeHead(407, { 'Proxy-Authenticate': 'Basic realm="Cliply"', Connection: 'close' }).end();
       return;
     }
 

@@ -278,7 +278,7 @@ function classifyYtDlpError(diagnostic) {
     return new AppError('PROTECTED_MEDIA', 'This source uses protected media and cannot be processed.', 403);
   }
   if (/private video|video is private|sign in to confirm|login required|members.only|authentication required/i.test(diagnostic)) {
-    return new AppError('AUTH_REQUIRED', 'The source requires authorization. ClipDown does not use account cookies or session credentials.', 403);
+    return new AppError('AUTH_REQUIRED', 'The source requires authorization. Cliply does not use account cookies or session credentials.', 403);
   }
   if (/http error 429|too many requests/i.test(diagnostic)) {
     return new AppError('SOURCE_RATE_LIMITED', 'The provider is temporarily rate-limiting requests. Try again later.', 429);
